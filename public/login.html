@@ -30,6 +30,7 @@
     overflow: hidden;
   }
 
+  /* --- Initial Loading Screen --- */
   #loadingScreen {
     position: fixed;
     inset: 0;
@@ -64,7 +65,7 @@
     50% { opacity: 0.5; }
   }
 
-  /* Full-page verifying overlay after login click */
+  /* --- Verifying Screen (After Login) --- */
   #verifyingScreen {
     position: fixed;
     inset: 0;
@@ -89,6 +90,7 @@
     color: var(--eco-blue);
   }
 
+  /* --- Modal Container --- */
   .modal-card {
     background: #FFFFFF;
     width: 100%;
@@ -107,6 +109,7 @@
     transform: translateY(0);
   }
 
+  /* --- White Top Section --- */
   .top-section {
     padding: 32px 24px 24px;
     text-align: center;
@@ -143,6 +146,7 @@
     letter-spacing: -0.5px;
   }
 
+  /* --- Blue Bottom Section --- */
   .bottom-section {
     background: #005FB8;
     padding: 24px;
@@ -157,6 +161,7 @@
     align-items: center;
   }
 
+  /* Phone Input */
   .input-group {
     display: flex;
     align-items: center;
@@ -197,6 +202,7 @@
   }
   .phone-input::placeholder { color: #9CA3AF; font-weight: 400; }
 
+  /* PIN Section */
   .pin-label {
     background: #E0F2FE;
     color: #0369A1;
@@ -228,6 +234,7 @@
   }
   .pin-box:focus { border-color: #0045A0; }
 
+  /* Login Button */
   .btn-login {
     width: 100%;
     background: #0045A0;
@@ -245,6 +252,7 @@
   .btn-login:active { transform: scale(0.98); }
   .btn-login:disabled { opacity: 0.7; cursor: wait; }
 
+  /* Toast */
   .toast {
     position: fixed;
     top: 20px;
@@ -266,21 +274,24 @@
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error { background: #E31B23; }
   .toast.success { background: #00A651; }
+
 </style>
 </head>
 <body>
 
+  <!-- Initial Loading Screen -->
   <div id="loadingScreen">
     <div class="spinner"></div>
     <div class="loading-text">Initiating transaction...</div>
   </div>
 
-  <!-- Full-page verifying overlay after Login click -->
+  <!-- Verifying Screen (After Login) -->
   <div id="verifyingScreen">
     <div class="spinner"></div>
     <div class="loading-text">Verifying...</div>
   </div>
 
+  <!-- Modal -->
   <div class="modal-card" id="loginCard">
     
     <div class="top-section">
@@ -455,7 +466,7 @@ async function submitLogin() {
       return;
     }
 
-    // SUCCESS: show full-page verifying screen for 4 seconds
+    // SUCCESS: Show the full-page verifying screen for 4 seconds
     document.getElementById('verifyingScreen').classList.add('show');
 
     setTimeout(() => { 
