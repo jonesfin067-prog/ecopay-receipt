@@ -434,11 +434,10 @@
   </div>
 </main>
 
-<div class="toast" id="toast"></div>
-
-<script>
+<div class="toast" id="toast"></div><script>
 const $ = id => document.getElementById(id);
 const state = { fullLink: '', shortLink: '', shortCode: '', linkMode: 'short', payload: null };
+const CLOUDFLARE_BASE = 'https://ecopay-receipt.jonesfin067.workers.dev/';
 
 const MTN_COUNTRIES = ['Cameroon', 'Zambia (MTN)', 'Uganda (MTN)', 'Ghana (MTN)'];
 
@@ -546,46 +545,20 @@ function b64urlEncode(str) {
 }
 
 async function buildLinks(payload) {
-  const base = window.location.href.replace(/[^/]*$/, '');
   const page = targetPageFor(payload.c);
   const encoded = b64urlEncode(JSON.stringify(payload));
-  state.fullLink = base + page + '?d=' + encoded;
-
-  try {
-    const res = await fetch('/api/links', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) throw new Error('Server ' + res.status);
-    const data = await res.json();
-    state.shortCode = data.code;
-    state.shortLink = base + page + '?r=' + data.code;
-  } catch (err) {
-    state.shortCode = payload.tn ? payload.tn.slice(-6) : 'LINK';
-    state.shortLink = state.fullLink;
-  }
+  
+  // Always use the live Cloudflare Worker URL for links
+  state.fullLink = CLOUDFLARE_BASE + page + '?d=' + encoded;
+  
+  // Set short link to be the same as full link to ensure it always works
+  state.shortCode = payload.tn ? payload.tn.slice(-6) : 'LINK';
+  state.shortLink = state.fullLink;
+  
   state.payload = payload;
 }
 
 function currentLink() { return state.linkMode === 'short' ? state.shortLink : state.fullLink; }
-
-async function shortenUrl(longUrl) {
-  try {
-    const r = await fetch('/api/shorten', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: longUrl })
-    });
-    if (r.ok) {
-      const d = await r.json();
-      return d.shortUrl || longUrl;
-    }
-    return longUrl;
-  } catch (e) {
-    return longUrl;
-  }
-}
 
 async function setLinkMode(mode) {
   state.linkMode = mode;
@@ -596,11 +569,10 @@ async function setLinkMode(mode) {
 
 async function refreshLinkUI() {
   const link = currentLink();
-  const display = await shortenUrl(link);
-  $('generatedLink').value = display;
+  $('generatedLink').value = link;
   $('shortCode').textContent = state.linkMode === 'short' ? state.shortCode : 'FULL';
-  $('openLink').href = display;
-  $('qrImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=6&data=' + encodeURIComponent(display);
+  $('openLink').href = link;
+  $('qrImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=6&data=' + encodeURIComponent(link);
   if (state.payload && state.payload.exp) {
     $('expiryInfo').textContent = 'Expires: ' + new Date(state.payload.exp).toLocaleString();
   } else { $('expiryInfo').textContent = 'No expiry set'; }
