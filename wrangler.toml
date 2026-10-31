@@ -1,6 +1,6 @@
 name = "ecopay-receipt"
 main = "worker.js"
-compatibility_date = "2024-09-23"
+compatibility_date = "2025-04-01"
 
 [assets]
 directory = "./public"
