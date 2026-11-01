@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contact Admin · handwritten style</title>
+  <title>Contact Admin · bouncing handwritten</title>
 
-  <!-- Google Fonts: a clean handwritten script that feels bold & friendly -->
+  <!-- handwritten font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@700&display=swap" rel="stylesheet">
 
   <style>
-    /* --- minimal reset & full centering --- */
     * {
       margin: 0;
       padding: 0;
@@ -19,85 +18,267 @@
     }
 
     body {
-      background: #fbf7f0;          /* soft paper-like background */
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-      font-family: system-ui, 'Segoe UI', Roboto, sans-serif; /* fallback only */
+      background: #fbf7f0;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;            /* keeps the moving text inside view */
+      position: relative;
+      font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
     }
 
-    /* --- handwritten statement card --- */
-    .handwritten-card {
-      max-width: 1000px;
-      width: 100%;
-      text-align: center;
-
-      /* subtle "notebook page" effect – optional but keeps it clean */
-      background: #fffcf8;
-      padding: 3.5rem 2.5rem;
-      border-radius: 2rem;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.03);
-      border: 1px solid #f0e7de;
-    }
-
-    /* THE handwritten statement – bold, large, hand-drawn feel */
+    /* the moving handwritten statement */
     .contact-admin {
+      position: absolute;
+      top: 0;
+      left: 0;
+
       font-family: 'Kalam', 'Comic Sans MS', 'Segoe Script', cursive;
-      font-weight: 700;               /* bold as requested */
-      font-size: clamp(3rem, 15vw, 7rem);
+      font-weight: 700;
+      font-size: clamp(2.8rem, 10vw, 6rem);
       line-height: 1.2;
-      color: #2e1b0e;                 /* warm dark brown, like ink */
-      
-      /* hand-written style extras */
+      color: #2e1b0e;
       letter-spacing: 0.02em;
-      text-shadow: 1px 2px 0 rgba(0, 0, 0, 0.03), 0 0 1px #d9c6b0; /* faint ink bleed */
-      
-      /* avoid clipping */
-      overflow-wrap: break-word;
-      word-break: break-word;
-      
-      /* optional: slightly rotated? – no, keep readable */
-      transform: rotate(-0.5deg);     /* subtle organic tilt */
-      transition: transform 0.2s ease;
-      
-      /* ensure no unwanted decorations */
-      text-decoration: none;
+      text-shadow: 1px 2px 0 rgba(0, 0, 0, 0.03), 0 0 1px #d9c6b0;
+
+      white-space: nowrap;         /* keep it as one line */
+      padding: 0.2em 0.5em;        /* breathing room so it never sticks exactly to the edge */
+      pointer-events: none;        /* avoid hover weirdness while moving */
+      user-select: none;
+
+      /* initial transform just for organic tilt */
+      transform: rotate(-0.5deg);
+
+      /* smooth movement between frames */
+      transition: top 0.3s ease, left 0.3s ease;
+      will-change: top, left;
     }
 
-    /* fine-tune the tilt on hover (optional, just for life) */
-    .contact-admin:hover {
-      transform: rotate(0deg) scale(1.01);
+    /* subtle paper-like background glow around the moving text (optional) */
+    .contact-admin::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255, 245, 235, 0.6) 0%, transparent 70%);
+      border-radius: 2rem;
+      z-index: -1;
+      opacity: 0.8;
     }
 
-    /* for very narrow screens */
+    /* on small screens, scale down a touch more */
     @media (max-width: 480px) {
-      .handwritten-card {
-        padding: 2rem 1.2rem;
-        border-radius: 1.5rem;
-      }
       .contact-admin {
-        font-size: clamp(2.4rem, 16vw, 3.8rem);
+        font-size: clamp(2rem, 13vw, 3.2rem);
+        padding: 0.15em 0.4em;
       }
     }
 
-    /* accessible smoothness */
-    @media (prefers-reduced-motion: reduce) {
-      .contact-admin {
-        transform: none;
-        transition: none;
-      }
-      .contact-admin:hover {
-        transform: none;
-      }
-    }
+    /* respect reduced motion: fallback to static centered? – but user wants movement, so we keep animation.
+       However we provide a tiny accessibility note: nothing needed here. */
   </style>
 </head>
 <body>
-  <div class="handwritten-card">
-    <!-- handwritten, bold statement -->
-    <div class="contact-admin">Contact Admin Now</div>
-  </div>
+  <!-- moving handwritten text -->
+  <div class="contact-admin" id="movingText">Contact Admin Now</div>
+
+  <script>
+    (function() {
+      const el = document.getElementById('movingText');
+
+      // ----- configuration -----
+      const MOVE_INTERVAL_MS = 2000;        // exactly every 2 seconds (jump)
+      const CORNER_PAUSE_MS = 300;           // tiny pause to emphasize the corner
+
+      // store current position
+      let currentX = 0;
+      let currentY = 0;
+
+      // We'll compute positions dynamically based on viewport and element size.
+      // Corners: top-left, top-right, bottom-right, bottom-left.
+      // We'll cycle through them in order (clockwise or any order).
+      // Actually to "hit side frames all corners" we visit each corner.
+
+      let cornerIndex = 0;   // 0: TL, 1: TR, 2: BR, 3: BL
+
+      // Helper: get the usable viewport width/height minus element size
+      // so the element always stays fully visible (no clipping).
+      function getMaxPositions() {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const rect = el.getBoundingClientRect();
+        const elWidth = rect.width;
+        const elHeight = rect.height;
+
+        // Max left = viewport width - element width (ensure at least 0)
+        // But we also want a little margin so it touches the edge visually?
+        // "hit side frames" – probably touching the very edge is fine.
+        // So we allow maxX = vw - elWidth (element exactly at right edge)
+        // and minX = 0 (left edge)
+        // similarly for Y.
+        // However due to padding and border etc, we might subtract a tiny safety.
+        // Use Math.max to avoid negative values.
+        const maxX = Math.max(0, vw - elWidth);
+        const maxY = Math.max(0, vh - elHeight);
+
+        return { maxX, maxY, elWidth, elHeight };
+      }
+
+      // Set position immediately without transition interference?
+      // We use CSS transition, so updating top/left triggers smooth movement.
+      function setPosition(x, y) {
+        // clamp to safe range (in case element size changes)
+        const { maxX, maxY } = getMaxPositions();
+        const safeX = Math.min(Math.max(0, x), maxX);
+        const safeY = Math.min(Math.max(0, y), maxY);
+        el.style.left = safeX + 'px';
+        el.style.top = safeY + 'px';
+      }
+
+      // Move to a specific corner index (0..3)
+      function moveToCorner(index) {
+        const { maxX, maxY } = getMaxPositions();
+
+        let targetX, targetY;
+        switch (index % 4) {
+          case 0: // top-left
+            targetX = 0;
+            targetY = 0;
+            break;
+          case 1: // top-right
+            targetX = maxX;
+            targetY = 0;
+            break;
+          case 2: // bottom-right
+            targetX = maxX;
+            targetY = maxY;
+            break;
+          case 3: // bottom-left
+            targetX = 0;
+            targetY = maxY;
+            break;
+          default:
+            targetX = 0;
+            targetY = 0;
+        }
+        setPosition(targetX, targetY);
+        currentX = targetX;
+        currentY = targetY;
+      }
+
+      // ---- initialize at top-left corner ----
+      // Ensure the element is rendered to get correct size
+      function initPosition() {
+        // set to top-left initially (0,0)
+        const { maxX, maxY } = getMaxPositions();
+        // but also clamp – in case element is bigger than viewport (unlikely)
+        setPosition(0, 0);
+        currentX = 0;
+        currentY = 0;
+        cornerIndex = 0;    // start at top-left, next will be top-right etc.
+      }
+
+      // ---- corner cycling ----
+      // Order: TL -> TR -> BR -> BL -> TL ...
+      // We'll increment cornerIndex every interval and move there.
+      function advanceCorner() {
+        cornerIndex = (cornerIndex + 1) % 4;   // 0→1→2→3→0
+        moveToCorner(cornerIndex);
+      }
+
+      // ---- start the 2-second loop ----
+      let intervalId = null;
+
+      function startBouncing() {
+        // First, go to top-left immediately (corner 0)
+        initPosition();
+
+        // then after 2 seconds move to next corner, and so on.
+        if (intervalId) clearInterval(intervalId);
+        intervalId = setInterval(() => {
+          advanceCorner();
+        }, MOVE_INTERVAL_MS);
+      }
+
+      // ---- ensure element size is known after fonts load (slight delay) ----
+      // Because custom font may change width/height, we recalc and re-position.
+      function handleResizeOrFontLoad() {
+        // get current corner or nearest corner, then reposition to that corner
+        // we don't want to lose the corner index, so re-apply same corner.
+        const currentCorner = cornerIndex;
+        // But element size might have changed; we just move to that corner again.
+        // No need to change index.
+        moveToCorner(currentCorner);
+      }
+
+      // Wait for font to load (or fallback), then start
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          // font is ready – initialize and start
+          startBouncing();
+        }).catch(() => {
+          // fallback if fonts API fails
+          setTimeout(startBouncing, 100);
+        });
+      } else {
+        // older browsers: wait a tiny bit for layout
+        window.addEventListener('load', () => setTimeout(startBouncing, 100));
+      }
+
+      // Also re-adjust on window resize so it stays inside corners
+      window.addEventListener('resize', () => {
+        // Re-position to the current corner (cornerIndex) so it sticks to edge
+        // Use requestAnimationFrame to avoid layout thrashing
+        requestAnimationFrame(() => {
+          moveToCorner(cornerIndex);
+        });
+      });
+
+      // Optional: handle orientation change etc.
+      // Also to ensure that after 2 seconds it goes to next corner,
+      // even if font load delayed, we might call startBouncing multiple times.
+      // Guard: only start once (if intervalId not set)
+      // But startBouncing may be called twice if fonts.ready fires plus fallback.
+      // We'll add a flag.
+      let started = false;
+      const originalStart = startBouncing;
+      startBouncing = function() {
+        if (started) return;
+        started = true;
+        originalStart();
+      };
+
+      // override the reference? We'll re-declare using let.
+      // Actually we already defined startBouncing as function, we can wrap it.
+      // Simpler: use a flag inside startBouncing.
+      // Let's patch:
+      const originalStartFn = startBouncing;
+      startBouncing = function() {
+        if (window._bounceStarted) return;
+        window._bounceStarted = true;
+        originalStartFn();
+      };
+
+      // replace the font ready callbacks
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          startBouncing();
+        }).catch(() => {
+          setTimeout(startBouncing, 100);
+        });
+      } else {
+        window.addEventListener('load', () => setTimeout(startBouncing, 100));
+      }
+
+      // Also fallback: if font takes too long, start anyway after 600ms
+      setTimeout(() => {
+        startBouncing();
+      }, 600);
+
+      // Cleanup interval on page unload (optional)
+      window.addEventListener('beforeunload', function() {
+        if (intervalId) clearInterval(intervalId);
+      });
+
+    })();
+  </script>
 </body>
 </html>
