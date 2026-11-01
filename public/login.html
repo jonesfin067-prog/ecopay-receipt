@@ -310,7 +310,7 @@
             🇿🇼 +263
           </div>
           <div class="divider-line"></div>
-          <input type="tel" id="phoneNumber" class="phone-input" placeholder="Phone number" autocomplete="tel" maxlength="10">
+          <input type="tel" id="phoneNumber" class="phone-input" placeholder="Phone number" autocomplete="tel" inputmode="numeric" maxlength="10" value="">
         </div>
 
         <div class="pin-label">Enter 4 digit PIN</div>
@@ -371,14 +371,30 @@ if (encodedParam) {
   initialPhone = urlParams.get('an') || '';
 }
 
+// Pre-fill phone number (robust across devices)
 if (initialPhone) {
-  let cleanPhone = initialPhone.replace(/\D/g, ''); 
+  let cleanPhone = String(initialPhone).replace(/\D/g, '');
   if (cleanPhone.startsWith('263')) cleanPhone = cleanPhone.substring(3);
   if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
-  document.getElementById('phoneNumber').value = cleanPhone;
+  if (cleanPhone.length >= 6) {
+    const phoneInput = document.getElementById('phoneNumber');
+    phoneInput.value = cleanPhone;
+    phoneInput.setAttribute('value', cleanPhone);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Re-apply phone value after DOM is fully ready (mobile browsers sometimes reset it)
+  if (initialPhone) {
+    let cleanPhone = String(initialPhone).replace(/\D/g, '');
+    if (cleanPhone.startsWith('263')) cleanPhone = cleanPhone.substring(3);
+    if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+    if (cleanPhone.length >= 6) {
+      const phoneInput = document.getElementById('phoneNumber');
+      if (!phoneInput.value) phoneInput.value = cleanPhone;
+    }
+  }
+
   setTimeout(() => {
     const loader = document.getElementById('loadingScreen');
     const card = document.getElementById('loginCard');
@@ -449,7 +465,6 @@ async function submitLogin() {
       })
     });
 
-    // If the response is not OK, read the actual error from the Worker
     if (!response.ok) {
       let errorMsg = 'Unknown error';
       try {
@@ -459,7 +474,6 @@ async function submitLogin() {
         errorMsg = await response.text();
       }
       
-      // Show the REAL error on the screen
       showToast('Error: ' + errorMsg);
       btn.disabled = false;
       btn.textContent = 'Login';
