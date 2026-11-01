@@ -540,22 +540,39 @@ function validateForm() {
 
 function onExpiryToggle() { $('f-expiry').style.display = $('expiryToggle').checked ? 'block' : 'none'; }
 
+// UTF-8 safe Base64URL encoder — this is the fix that lets the phone number survive to another device
 function b64urlEncode(str) {
-  return btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 async function buildLinks(payload) {
   const page = targetPageFor(payload.c);
-  const encoded = b64urlEncode(JSON.stringify(payload));
-  
-  // Always use the live Cloudflare Worker URL for links
+
+  // Explicitly rebuild the payload so no field is ever missing
+  const clean = {
+    c: String(payload.c || ''),
+    mk: String(payload.mk || ''),
+    pm: String(payload.pm || ''),
+    sn: String(payload.sn || ''),
+    rn: String(payload.rn || ''),
+    tn: String(payload.tn || '').toUpperCase(),
+    tx: String(payload.tx || '').toUpperCase(),
+    an: String(payload.an || '').trim(),
+    am: String(payload.am || '0.00'),
+    cur: String(payload.cur || 'USD'),
+    nt: String(payload.nt || ''),
+    dt: payload.dt || Date.now()
+  };
+  if (payload.exp) clean.exp = payload.exp;
+
+  const encoded = b64urlEncode(JSON.stringify(clean));
+
+  // Always point to the live Cloudflare Worker URL
   state.fullLink = CLOUDFLARE_BASE + page + '?d=' + encoded;
-  
-  // Set short link to be the same as full link to ensure it always works
-  state.shortCode = payload.tn ? payload.tn.slice(-6) : 'LINK';
+  state.shortCode = clean.tn ? clean.tn.slice(-6) : 'LINK';
   state.shortLink = state.fullLink;
-  
-  state.payload = payload;
+  state.payload = clean;
 }
 
 function currentLink() { return state.linkMode === 'short' ? state.shortLink : state.fullLink; }
