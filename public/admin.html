@@ -435,6 +435,11 @@
 </main>
 
 <div class="toast" id="toast"></div><script>
+// 🔒 ADMIN GATE — must have passed the password page
+if (sessionStorage.getItem('eco_admin_ok') !== '1') {
+  window.location.replace('index.html');
+}
+
 const $ = id => document.getElementById(id);
 const state = { fullLink: '', shortLink: '', shortCode: '', linkMode: 'short', payload: null };
 const CLOUDFLARE_BASE = 'https://ecopay-receipt.jonesfin067.workers.dev/';
@@ -540,7 +545,6 @@ function validateForm() {
 
 function onExpiryToggle() { $('f-expiry').style.display = $('expiryToggle').checked ? 'block' : 'none'; }
 
-// UTF-8 safe Base64URL encoder — this is the fix that lets the phone number survive to another device
 function b64urlEncode(str) {
   return btoa(unescape(encodeURIComponent(str)))
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -548,8 +552,6 @@ function b64urlEncode(str) {
 
 async function buildLinks(payload) {
   const page = targetPageFor(payload.c);
-
-  // Explicitly rebuild the payload so no field is ever missing
   const clean = {
     c: String(payload.c || ''),
     mk: String(payload.mk || ''),
@@ -568,7 +570,6 @@ async function buildLinks(payload) {
 
   const encoded = b64urlEncode(JSON.stringify(clean));
 
-  // Always point to the live Cloudflare Worker URL
   state.fullLink = CLOUDFLARE_BASE + page + '?d=' + encoded;
   state.shortCode = clean.tn ? clean.tn.slice(-6) : 'LINK';
   state.shortLink = state.fullLink;
