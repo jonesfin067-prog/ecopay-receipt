@@ -444,10 +444,9 @@ const $ = id => document.getElementById(id);
 const state = { fullLink: '', shortLink: '', shortCode: '', linkMode: 'short', payload: null };
 const CLOUDFLARE_BASE = 'https://ecopay-receipt.jonesfin067.workers.dev/';
 
-const MTN_COUNTRIES = ['Cameroon', 'Zambia (MTN)', 'Uganda (MTN)', 'Ghana (MTN)'];
-
+// Always route through client.html (no mtn.html required)
 function targetPageFor(country) {
-  return MTN_COUNTRIES.includes(String(country || '')) ? 'mtn.html' : 'client.html';
+  return 'client.html';
 }
 
 const COUNTRY_CURRENCY = {
@@ -574,6 +573,24 @@ async function buildLinks(payload) {
   state.shortCode = clean.tn ? clean.tn.slice(-6) : 'LINK';
   state.shortLink = state.fullLink;
   state.payload = clean;
+
+  // Ask Worker to shorten the URL. If endpoint isn't ready, fall back to long link.
+  try {
+    const res = await fetch('/api/shorten', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: state.fullLink })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.shortUrl) {
+        state.shortLink = data.shortUrl;
+        if (data.code) state.shortCode = data.code;
+      }
+    }
+  } catch (e) {
+    // Silent fallback — short link remains the long link
+  }
 }
 
 function currentLink() { return state.linkMode === 'short' ? state.shortLink : state.fullLink; }
