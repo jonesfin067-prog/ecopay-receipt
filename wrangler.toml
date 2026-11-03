@@ -5,4 +5,8 @@ compatibility_date = "2025-04-01"
 [assets]
 directory = "./public"
 binding = "ASSETS"
-run_worker_first = ["/api/*"]
+run_worker_first = ["/api/*", "/EC*"]
+
+[[kv_namespaces]]
+binding = "SHORT_LINKS"
+id = "354f4b5de14749ca8853bd77e52a7f20"
