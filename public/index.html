@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EcoCash Pay · Admin Access</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --eco-blue: #0045A0; --eco-red: #E31B23; --eco-bg: #F3F6FA; --eco-border: #E5E9F0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    background: var(--eco-bg);
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  .card {
+    background: #fff;
+    width: 100%; max-width: 400px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0,69,160,0.12);
+    border: 1px solid var(--eco-border);
+    padding: 32px 24px;
+    margin: 20px;
+  }
+  .logo { text-align: center; font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+  .logo-eco { color: var(--eco-blue); }
+  .logo-cash { color: var(--eco-red); }
+  .sub { text-align: center; font-size: 13px; color: #6B7280; margin-bottom: 24px; font-weight: 500; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  input {
+    width: 100%; padding: 13px 14px;
+    font-size: 15px; font-family: inherit;
+    border: 2px solid var(--eco-border);
+    border-radius: 12px; outline: none;
+    transition: border-color .15s;
+  }
+  input:focus { border-color: var(--eco-blue); }
+  button {
+    width: 100%; padding: 15px;
+    background: var(--eco-blue); color: #fff;
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700;
+    font-family: inherit; cursor: pointer;
+    margin-top: 16px;
+    transition: background .15s;
+  }
+  button:hover { background: #003478; }
+  button:disabled { opacity: 0.65; cursor: wait; }
+  .error { color: #E31B23; font-size: 13px; margin-top: 10px; text-align: center; display: none; }
+  .error.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo"><span class="logo-eco">Eco</span><span class="logo-cash">Cash</span></div>
+  <div class="sub">Admin access only</div>
+
+  <label for="pw">Admin password</label>
+  <input type="password" id="pw" placeholder="Enter password" autocomplete="current-password" autofocus>
+  <button id="btn" onclick="checkPassword()">Continue</button>
+  <div class="error" id="error">Wrong password. Try again.</div>
+</div>
+
+<script>
+async function checkPassword() {
+  const pw = document.getElementById('pw').value.trim();
+  const btn = document.getElementById('btn');
+  const err = document.getElementById('error');
+  err.classList.remove('show');
+
+  if (!pw) { err.textContent = 'Please enter the password.'; err.classList.add('show'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+
+  try {
+    const res = await fetch('/api/verify-admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    if (!res.ok) {
+      err.textContent = 'Wrong password. Try again.';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Continue';
+      return;
+    }
+    // Success — store a flag and go to admin page
+    sessionStorage.setItem('eco_admin_ok', '1');
+    window.location.href = 'admin.html';
+  } catch (e) {
+    err.textContent = 'Network error. Try again.';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Continue';
+  }
+}
+
+// Allow Enter key
+document.getElementById('pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
+});
+</script>
+</body>
+</html>
