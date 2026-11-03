@@ -5,7 +5,7 @@ compatibility_date = "2025-04-01"
 [assets]
 directory = "./public"
 binding = "ASSETS"
-run_worker_first = ["/api/*", "/EC*"]
+run_worker_first = true
 
 [[kv_namespaces]]
 binding = "SHORT_LINKS"
