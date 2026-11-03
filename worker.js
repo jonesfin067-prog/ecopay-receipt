@@ -131,15 +131,16 @@ export default {
         // Save in KV for 30 days
         await env.SHORT_LINKS.put(code, longUrl, { expirationTtl: 60 * 60 * 24 * 30 });
 
-        const shortUrl = url.origin + '/' + code;
+        // Short URL now under /api/r/ so the Worker always handles it
+        const shortUrl = url.origin + '/api/r/' + code;
         return jsonResponse({ shortUrl, code }, 200);
       }
 
       // =========================
-      // 5. GET /ECxxxxxx — redirect short links
+      // 5. GET /api/r/ECxxxxxx — redirect short links
       // =========================
-      if (request.method === 'GET' && /^\/EC[A-Z0-9]{6}$/.test(url.pathname.slice(1))) {
-        const code = url.pathname.slice(1);
+      if (request.method === 'GET' && url.pathname.startsWith('/api/r/')) {
+        const code = url.pathname.slice(7);
         if (env.SHORT_LINKS) {
           const target = await env.SHORT_LINKS.get(code);
           if (target) {
@@ -167,7 +168,7 @@ export default {
       }
 
       // =========================
-      // 7. GET /api/logs (existing)
+      // 7. GET /api/logs
       // =========================
       if (url.pathname === '/api/logs') {
         const entries = [];
